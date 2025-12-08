@@ -23,7 +23,7 @@ const blogDatabase = [
         excerpt: "分享一些学习HTML的心得体会，以及实用的学习资源推荐...",
         date: "2024-01-21",
         readTime: "5分钟",
-        author: "作者名",
+        author: "上官云琛",
         featured: true
     },
     {
