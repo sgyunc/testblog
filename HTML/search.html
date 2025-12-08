@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="搜索博客文章">
+    <title>搜索文章 | 上官云琛</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 头部导航 -->
+        <header class="site-header">
+            <div class="header-top">
+                <h1 class="site-title">
+                    <a href="index.html">首页</a>
+                </h1>
+                <a href="search.html" class="search-icon-link active">
+                    <i class="fas fa-search"></i>
+                    <span class="search-text">搜索</span>
+                </a>
+            </div>
+            
+            <nav class="site-nav">
+                <a href="index.html"><i class="fas fa-home"></i> 首页</a>
+                <a href="archive.html"><i class="fas fa-archive"></i> 归档</a>
+                <a href="search.html" class="active"><i class="fas fa-search"></i> 搜索</a>
+                <a href="about.html"><i class="fas fa-user"></i> 关于</a>
+            </nav>
+        </header>
+
+        <!-- 搜索页面内容 -->
+        <main class="search-main">
+            <div class="search-hero">
+                <h1><i class="fas fa-search"></i> 搜索博客文章</h1>
+                <p class="hero-subtitle">输入关键词搜索标题、标签或文章内容</p>
+                
+                <!-- 搜索框 -->
+                <div class="search-box-container">
+                    <form id="searchForm" class="search-form">
+                        <div class="search-input-group">
+                            <input type="text" 
+                                   id="searchQuery" 
+                                   placeholder="输入关键词..."
+                                   autocomplete="off"
+                                   autofocus>
+                            <button type="submit" class="search-submit-btn">
+                                <i class="fas fa-search"></i> 搜索
+                            </button>
+                        </div>
+                        <div class="search-tips">
+                            <p>搜索提示：</p>
+                            <div class="quick-search-tags" id="quick-tags">
+                                <!-- 快速搜索标签由JavaScript生成 -->
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- 搜索结果区域 -->
+            <div class="search-results-area">
+                <div class="search-status" id="searchStatus">
+                    <div class="status-default">
+                        <i class="fas fa-search fa-3x"></i>
+                        <h3>准备好搜索了吗？</h3>
+                        <p>在搜索框中输入关键词，查找你感兴趣的文章</p>
+                    </div>
+                </div>
+                
+                <!-- 搜索结果 -->
+                <div class="search-results-container" id="searchResults" style="display: none;">
+                    <div class="results-header">
+                        <h3 id="resultsTitle">搜索结果</h3>
+                        <div class="results-count" id="resultsCount"></div>
+                    </div>
+                    <div class="results-list" id="resultsList"></div>
+                </div>
+                
+                <!-- 搜索历史 -->
+                <div class="search-history-section" id="searchHistorySection" style="display: none;">
+                    <h3><i class="fas fa-history"></i> 搜索历史</h3>
+                    <div class="history-tags" id="historyTags"></div>
+                    <button class="clear-history" onclick="clearSearchHistory()">
+                        <i class="fas fa-trash"></i> 清空历史
+                    </button>
+                </div>
+                
+                <!-- 热门搜索 -->
+                <div class="popular-searches" id="popularSearches">
+                    <h3><i class="fas fa-fire"></i> 热门搜索</h3>
+                    <div class="popular-tags">
+                        <!-- 热门标签由JavaScript生成 -->
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="site-footer">
+            <div class="footer-content">
+                <p>© 2024 上官云琛 | 搜索功能页面</p>
+                <div class="footer-links">
+                    <a href="index.html">返回首页</a>
+                    <a href="archive.html">查看归档</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- 导入文章数据 -->
+    <script src="blog-data.js"></script>
+    
+    <!-- 搜索功能脚本 -->
+    <script>
+        // 初始化搜索数据
+        function initSearchData() {
+            const quickTags = document.getElementById('quick-tags');
+            const popularTags = document.querySelector('.popular-tags');
+            
+            // 计算标签频率
+            const tagFrequency = {};
+            blogDatabase.forEach(post => {
+                post.tags.forEach(tag => {
+                    tagFrequency[tag] = (tagFrequency[tag] || 0) + 1;
+                });
+            });
+            
+            // 显示快速搜索标签
+            const sortedTags = Object.keys(tagFrequency).sort((a, b) => tagFrequency[b] - tagFrequency[a]);
+            sortedTags.slice(0, 5).forEach(tag => {
+                const span = document.createElement('span');
+                span.className = 'quick-tag';
+                span.textContent = tag;
+                span.onclick = () => setSearchQuery(tag);
+                quickTags.appendChild(span);
+            });
+            
+            // 显示热门搜索
+            sortedTags.slice(0, 8).forEach(tag => {
+                const count = tagFrequency[tag];
+                const a = document.createElement('a');
+                a.href = `search.html?q=${encodeURIComponent(tag)}`;
+                a.className = 'popular-tag';
+                a.innerHTML = `
+                    <span class="tag-text">${tag}</span>
+                    <span class="tag-count">${count}</span>
+                `;
+                popularTags.appendChild(a);
+            });
+        }
+        
+        // 获取URL中的搜索参数
+        function getSearchQuery() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('q') || '';
+        }
+        
+        // 设置搜索框内容
+        function setSearchQuery(query) {
+            document.getElementById('searchQuery').value = query;
+            performSearch(query);
+        }
+        
+        // 执行搜索
+        function performSearch(query) {
+            const searchQuery = query || document.getElementById('searchQuery').value.trim();
+            
+            if (!searchQuery) {
+                showDefaultState();
+                return;
+            }
+            
+            // 保存搜索历史
+            saveToSearchHistory(searchQuery);
+            
+            // 执行搜索逻辑
+            const results = searchInDatabase(searchQuery);
+            
+            // 显示结果
+            displaySearchResults(results, searchQuery);
+            
+            // 更新URL（不刷新页面）
+            const newUrl = new URL(window.location);
+            newUrl.searchParams.set('q', searchQuery);
+            window.history.pushState({}, '', newUrl);
+        }
+        
+        // 在数据库中搜索
+        function searchInDatabase(query) {
+            const lowerQuery = query.toLowerCase();
+            return blogDatabase.filter(item => {
+                // 搜索标题
+                if (item.title.toLowerCase().includes(lowerQuery)) {
+                    item.matchType = 'title';
+                    return true;
+                }
+                
+                // 搜索标签
+                if (item.tags.some(tag => tag.toLowerCase().includes(lowerQuery))) {
+                    item.matchType = 'tag';
+                    return true;
+                }
+                
+                // 搜索内容
+                if (item.content.toLowerCase().includes(lowerQuery)) {
+                    item.matchType = 'content';
+                    return true;
+                }
+                
+                return false;
+            });
+        }
+        
+        // 显示搜索结果
+        function displaySearchResults(results, query) {
+            const resultsContainer = document.getElementById('searchResults');
+            const resultsList = document.getElementById('resultsList');
+            const resultsTitle = document.getElementById('resultsTitle');
+            const resultsCount = document.getElementById('resultsCount');
+            const searchStatus = document.getElementById('searchStatus');
+            
+            // 更新标题和统计
+            resultsTitle.textContent = `"${query}" 的搜索结果`;
+            resultsCount.textContent = `找到 ${results.length} 篇文章`;
+            
+            if (results.length === 0) {
+                // 没有结果
+                resultsList.innerHTML = `
+                    <div class="no-results">
+                        <i class="fas fa-search fa-3x"></i>
+                        <h3>没有找到相关文章</h3>
+                        <p>没有找到与 "<strong>${query}</strong>" 相关的文章</p>
+                        <div class="search-suggestions">
+                            <p>建议：</p>
+                            <ul>
+                                <li>尝试不同的关键词</li>
+                                <li>检查拼写是否正确</li>
+                                <li>使用更通用的词语</li>
+                                <li>查看热门搜索标签</li>
+                            </ul>
+                        </div>
+                    </div>
+                `;
+            } else {
+                // 显示结果
+                let resultsHtml = '';
+                results.forEach(item => {
+                    // 高亮显示匹配的部分
+                    let displayTitle = highlightText(item.title, query);
+                    let displayExcerpt = highlightText(item.excerpt, query);
+                    
+                    // 显示匹配类型
+                    let matchTypeText = '';
+                    switch(item.matchType) {
+                        case 'title': matchTypeText = '标题匹配'; break;
+                        case 'tag': matchTypeText = '标签匹配'; break;
+                        case 'content': matchTypeText = '内容匹配'; break;
+                    }
+                    
+                    resultsHtml += `
+                    <div class="search-result-item">
+                        <div class="result-header">
+                            <h4><a href="${item.url}">${displayTitle}</a></h4>
+                            <span class="match-badge">${matchTypeText}</span>
+                        </div>
+                        <div class="result-meta">
+                            <time><i class="far fa-calendar"></i> ${item.date}</time>
+                            <span class="read-time"><i class="far fa-clock"></i> ${item.readTime}</span>
+                            <div class="result-tags">
+                                ${item.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                            </div>
+                        </div>
+                        <p class="result-excerpt">${displayExcerpt}</p>
+                        <a href="${item.url}" class="read-more-btn">
+                            <i class="fas fa-book-open"></i> 阅读全文
+                        </a>
+                    </div>
+                    `;
+                });
+                resultsList.innerHTML = resultsHtml;
+            }
+            
+            // 显示结果区域
+            searchStatus.style.display = 'none';
+            resultsContainer.style.display = 'block';
+            
+            // 显示搜索历史
+            showSearchHistory();
+        }
+        
+        // 高亮文本
+        function highlightText(text, query) {
+            if (!query) return text;
+            const regex = new RegExp(`(${escapeRegExp(query)})`, 'gi');
+            return text.replace(regex, '<mark>$1</mark>');
+        }
+        
+        // 转义正则表达式特殊字符
+        function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+        
+        // 保存搜索历史
+        function saveToSearchHistory(query) {
+            if (!query.trim()) return;
+            
+            let history = JSON.parse(localStorage.getItem('blogSearchHistory') || '[]');
+            
+            // 移除重复项
+            history = history.filter(item => item !== query);
+            
+            // 添加到开头
+            history.unshift(query);
+            
+            // 只保留最近10条
+            history = history.slice(0, 10);
+            
+            localStorage.setItem('blogSearchHistory', JSON.stringify(history));
+        }
+        
+        // 显示搜索历史
+        function showSearchHistory() {
+            const history = JSON.parse(localStorage.getItem('blogSearchHistory') || '[]');
+            const historySection = document.getElementById('searchHistorySection');
+            const historyTags = document.getElementById('historyTags');
+            
+            if (history.length > 0) {
+                let historyHtml = '';
+                history.forEach(query => {
+                    historyHtml += `<span class="history-tag" onclick="setSearchQuery('${query}')">${query}</span>`;
+                });
+                historyTags.innerHTML = historyHtml;
+                historySection.style.display = 'block';
+            } else {
+                historySection.style.display = 'none';
+            }
+        }
+        
+        // 清空搜索历史
+        function clearSearchHistory() {
+            if (confirm('确定要清空搜索历史吗？')) {
+                localStorage.removeItem('blogSearchHistory');
+                showSearchHistory();
+            }
+        }
+        
+        // 显示默认状态
+        function showDefaultState() {
+            document.getElementById('searchStatus').style.display = 'block';
+            document.getElementById('searchResults').style.display = 'none';
+        }
+        
+        // 页面加载时执行
+        window.onload = function() {
+            // 初始化搜索数据
+            initSearchData();
+            
+            // 设置搜索框内容
+            const query = getSearchQuery();
+            if (query) {
+                document.getElementById('searchQuery').value = query;
+                performSearch(query);
+            }
+            
+            // 显示搜索历史
+            showSearchHistory();
+            
+            // 表单提交事件
+            document.getElementById('searchForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                performSearch();
+            });
+            
+            // 实时搜索（可选）
+            document.getElementById('searchQuery').addEventListener('input', function() {
+                const query = this.value.trim();
+                if (query.length >= 2) {
+                    performSearch(query);
+                } else if (query.length === 0) {
+                    showDefaultState();
+                }
+            });
+        };
+        
+        // 处理浏览器前进/后退
+        window.addEventListener('popstate', function() {
+            const query = getSearchQuery();
+            document.getElementById('searchQuery').value = query;
+            if (query) {
+                performSearch(query);
+            } else {
+                showDefaultState();
+            }
+        });
+    </script>
+</body>
+</html>

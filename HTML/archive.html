@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="文章归档页面">
+    <title>文章归档 | 上官云琛</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 头部导航 -->
+        <header class="site-header">
+            <div class="header-top">
+                <h1 class="site-title">
+                    <a href="index.html">首页</a>
+                </h1>
+                <a href="search.html" class="search-icon-link">
+                    <i class="fas fa-search"></i>
+                    <span class="search-text">搜索</span>
+                </a>
+            </div>
+            
+            <nav class="site-nav">
+                <a href="index.html"><i class="fas fa-home"></i> 首页</a>
+                <a href="archive.html" class="active"><i class="fas fa-archive"></i> 归档</a>
+                <a href="search.html"><i class="fas fa-search"></i> 搜索</a>
+                <a href="about.html"><i class="fas fa-user"></i> 关于</a>
+            </nav>
+        </header>
+
+        <!-- 归档页面内容 -->
+        <main class="archive-page">
+            <h2 class="page-title">
+                <i class="fas fa-archive"></i> 文章归档
+            </h2>
+            
+            <!-- 简介 -->
+            <div class="archive-intro">
+                <p>这里是所有文章的归档页面，按照年份和分类整理，方便你查找和阅读历史文章。</p>
+            </div>
+            
+            <!-- 统计信息 -->
+            <div class="archive-stats" id="archiveStats">
+                <!-- JavaScript会在这里插入统计信息 -->
+            </div>
+            
+            <!-- 按年份归档 -->
+            <section class="archive-years" id="archiveYears">
+                <!-- JavaScript会在这里插入年份归档 -->
+            </section>
+            
+            <!-- 按分类归档 -->
+            <section class="archive-categories-section" id="archiveCategories">
+                <h3><i class="fas fa-folder"></i> 按分类归档</h3>
+                <div class="categories-grid" id="categoriesGrid">
+                    <!-- JavaScript会在这里插入分类归档 -->
+                </div>
+            </section>
+        </main>
+
+        <footer class="site-footer">
+            <div class="footer-content">
+                <p>© 2024 上官云琛 | 文章归档</p>
+                <div class="footer-links">
+                    <a href="index.html">返回首页</a>
+                    <a href="search.html">搜索文章</a>
+                    <a href="about.html">关于本站</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- 导入文章数据 -->
+    <script src="blog-data.js"></script>
+    
+    <!-- 归档页面脚本 -->
+    <script>
+        // 生成归档页面内容
+        function generateArchive() {
+            const archiveStats = document.getElementById('archiveStats');
+            const archiveYears = document.getElementById('archiveYears');
+            const categoriesGrid = document.getElementById('categoriesGrid');
+            
+            // 按年份分组
+            const postsByYear = {};
+            const tagFrequency = {};
+            
+            blogDatabase.forEach(post => {
+                // 按年份分组
+                const year = post.date.substring(0, 4);
+                if (!postsByYear[year]) {
+                    postsByYear[year] = [];
+                }
+                postsByYear[year].push(post);
+                
+                // 统计标签
+                post.tags.forEach(tag => {
+                    tagFrequency[tag] = (tagFrequency[tag] || 0) + 1;
+                });
+            });
+            
+            // 生成统计信息
+            const totalPosts = blogDatabase.length;
+            const totalYears = Object.keys(postsByYear).length;
+            const totalTags = Object.keys(tagFrequency).length;
+            const startYear = Math.min(...Object.keys(postsByYear).map(y => parseInt(y)));
+            
+            archiveStats.innerHTML = `
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-number">${totalPosts}</span>
+                        <span class="stat-label">总文章数</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">${totalYears}</span>
+                        <span class="stat-label">归档年份</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">${totalTags}</span>
+                        <span class="stat-label">标签数量</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">${startYear}</span>
+                        <span class="stat-label">开始年份</span>
+                    </div>
+                </div>
+            `;
+            
+            // 生成年份归档
+            let yearsHtml = '';
+            const sortedYears = Object.keys(postsByYear).sort((a, b) => b - a);
+            
+            sortedYears.forEach(year => {
+                const yearPosts = postsByYear[year];
+                yearsHtml += `
+                    <div class="archive-year-section">
+                        <div class="year-header">
+                            <h3>${year}年</h3>
+                            <span class="year-count">${yearPosts.length}篇文章</span>
+                        </div>
+                        
+                        <div class="year-articles">
+                `;
+                
+                yearPosts.forEach(post => {
+                    yearsHtml += `
+                        <article class="archive-article">
+                            <div class="article-date">
+                                <i class="far fa-calendar"></i> ${post.date.substring(5).replace('-', '月')}日
+                            </div>
+                            <div class="article-content">
+                                <h4><a href="${post.url}">${post.title}</a></h4>
+                                <div class="article-meta">
+                                    <div class="article-tags">
+                                        ${post.tags.map(tag => `<span class="article-tag">${tag}</span>`).join('')}
+                                    </div>
+                                    <span class="reading-time">${post.readTime}</span>
+                                </div>
+                                <p class="article-excerpt">${post.excerpt}</p>
+                            </div>
+                        </article>
+                    `;
+                });
+                
+                yearsHtml += `
+                        </div>
+                    </div>
+                `;
+            });
+            
+            archiveYears.innerHTML = yearsHtml;
+            
+            // 按标签分类归档
+            const sortedTags = Object.keys(tagFrequency).sort((a, b) => tagFrequency[b] - tagFrequency[a]);
+            let categoriesHtml = '';
+            
+            sortedTags.slice(0, 6).forEach(tag => {
+                const postsInTag = blogDatabase.filter(post => post.tags.includes(tag));
+                categoriesHtml += `
+                    <div class="category-card">
+                        <h4>
+                            <i class="fas fa-tag"></i> ${tag}
+                            <span class="category-count">${postsInTag.length}篇</span>
+                        </h4>
+                        <ul>
+                `;
+                
+                postsInTag.slice(0, 5).forEach(post => {
+                    categoriesHtml += `
+                        <li>
+                            <a href="${post.url}">
+                                ${post.title}
+                                <span class="article-date-small">${post.date}</span>
+                            </a>
+                        </li>
+                    `;
+                });
+                
+                if (postsInTag.length > 5) {
+                    categoriesHtml += `
+                        <li class="view-more">
+                            <a href="search.html?q=${encodeURIComponent(tag)}">查看更多...</a>
+                        </li>
+                    `;
+                }
+                
+                categoriesHtml += `
+                        </ul>
+                    </div>
+                `;
+            });
+            
+            categoriesGrid.innerHTML = categoriesHtml;
+        }
+        
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', generateArchive);
+    </script>
+</body>
+</html>

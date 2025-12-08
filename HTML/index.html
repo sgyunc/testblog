@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="一个纯HTML静态博客，专注于技术分享和个人思考">
+    <title>上官云琛 | 纯HTML静态博客</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📝</text></svg>">
+</head>
+<body>
+    <div class="container">
+        <!-- 头部导航 -->
+        <header class="site-header">
+            <div class="header-top">
+                <h1 class="site-title">
+                    <a href="index.html">首页</a>
+                </h1>
+                <a href="search.html" class="search-icon-link">
+                    <i class="fas fa-search"></i>
+                    <span class="search-text">搜索</span>
+                </a>
+            </div>
+            
+            <nav class="site-nav">
+                <a href="index.html" class="active"><i class="fas fa-home"></i> 首页</a>
+                <a href="archive.html"><i class="fas fa-archive"></i> 归档</a>
+                <a href="search.html"><i class="fas fa-search"></i> 搜索</a>
+                <a href="about.html"><i class="fas fa-user"></i> 关于</a>
+            </nav>
+        </header>
+
+        <!-- 主要内容 -->
+        <main class="main-content">
+            <!-- 欢迎区域 -->
+            <section class="posts-section">
+                <h2 class="section-title">最新文章</h2>
+                
+                <!-- 文章列表由JavaScript动态生成 -->
+                <div id="posts-list" class="posts-list">
+                    <!-- JavaScript会在这里插入文章 -->
+                </div>
+            </section>
+            
+            <!-- 侧边栏 -->
+            <aside class="sidebar">
+                <div class="widget">
+                    <h3 class="widget-title"><i class="fas fa-search"></i> 搜索文章</h3>
+                    <p>需要查找特定内容？使用搜索功能快速找到相关文章。</p>
+                    <a href="search.html" class="search-page-link">
+                        <i class="fas fa-search"></i> 前往搜索页面
+                    </a>
+                </div>
+                
+                <div class="widget">
+                    <h3 class="widget-title"><i class="fas fa-tags"></i> 热门标签</h3>
+                    <div class="tag-cloud" id="tag-cloud">
+                        <!-- JavaScript会在这里插入热门标签 -->
+                    </div>
+                </div>
+                
+                <div class="widget">
+                    <h3 class="widget-title"><i class="fas fa-history"></i> 最近更新</h3>
+                    <ul class="recent-posts" id="recent-posts">
+                        <!-- JavaScript会在这里插入最近文章 -->
+                    </ul>
+                </div>
+            </aside>
+        </main>
+
+        <!-- 页脚 -->
+        <footer class="site-footer">
+            <div class="footer-content">
+                <p>© 2024 上官云琛 | 纯HTML静态博客</p>
+                <div class="footer-links">
+                    <a href="index.html">首页</a>
+                    <a href="archive.html">归档</a>
+                    <a href="search.html">搜索</a>
+                    <a href="about.html">关于</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- 导入文章数据 -->
+    <script src="blog-data.js"></script>
+    
+    <!-- 首页脚本 -->
+    <script>
+        // 显示文章列表
+        function displayPosts() {
+            const postsList = document.getElementById('posts-list');
+            const recentPosts = document.getElementById('recent-posts');
+            const tagCloud = document.getElementById('tag-cloud');
+            
+            // 清空现有内容
+            postsList.innerHTML = '';
+            recentPosts.innerHTML = '';
+            
+            // 计算标签频率
+            const tagFrequency = {};
+            blogDatabase.forEach(post => {
+                post.tags.forEach(tag => {
+                    tagFrequency[tag] = (tagFrequency[tag] || 0) + 1;
+                });
+            });
+            
+            // 显示标签云
+            const sortedTags = Object.keys(tagFrequency).sort((a, b) => tagFrequency[b] - tagFrequency[a]);
+            sortedTags.slice(0, 8).forEach(tag => {
+                const tagElement = document.createElement('a');
+                tagElement.href = `search.html?q=${encodeURIComponent(tag)}`;
+                tagElement.className = 'tag-item';
+                tagElement.textContent = tag;
+                tagCloud.appendChild(tagElement);
+            });
+            
+            // 显示最新文章（最多5篇）
+            const recentPostsList = blogDatabase.slice(0, 5);
+            recentPostsList.forEach(post => {
+                const li = document.createElement('li');
+                li.innerHTML = `<a href="${post.url}">${post.title}</a>`;
+                recentPosts.appendChild(li);
+            });
+            
+            // 显示所有文章
+            blogDatabase.forEach(post => {
+                const article = document.createElement('article');
+                article.className = 'post-preview';
+                article.innerHTML = `
+                    <div class="post-header">
+                        <h3 class="post-title">
+                            <a href="${post.url}">${post.title}</a>
+                        </h3>
+                        <div class="post-meta">
+                            <time datetime="${post.date}">${post.date}</time>
+                            <div class="post-tags">
+                                ${post.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="post-excerpt">
+                        <p>${post.excerpt}</p>
+                    </div>
+                    <div class="post-footer">
+                        <a href="${post.url}" class="read-more">阅读全文 →</a>
+                        <span class="reading-time">${post.readTime}</span>
+                    </div>
+                `;
+                postsList.appendChild(article);
+            });
+        }
+        
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', displayPosts);
+    </script>
+</body>
+</html>
