@@ -11,7 +11,7 @@ const blogDatabase = [
         excerpt: "博客开通的第一篇文章，记录开始写博客的初衷和想法...",
         date: "2024-01-20",
         readTime: "2分钟",
-        author: "作者名",
+        author: "上官云琛",
         featured: true
     },
     {
