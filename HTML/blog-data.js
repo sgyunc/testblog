@@ -35,7 +35,7 @@ const blogDatabase = [
         excerpt: "这是我的第一篇博客文章，用来记录我创建这个静态博客的过程...",
         date: "2024-01-22",
         readTime: "3分钟",
-        author: "作者名",
+        author: "上官云琛",
         featured: true
     }
 ];
