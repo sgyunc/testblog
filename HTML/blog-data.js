@@ -11,7 +11,7 @@ const blogDatabase = [
         excerpt: "博客开通的第一篇文章，记录开始写博客的初衷和想法...",
         date: "2024-01-20",
         readTime: "2分钟",
-        author: "上官云琛",
+        author: "作者名",
         featured: true
     },
     {
@@ -23,7 +23,19 @@ const blogDatabase = [
         excerpt: "分享一些学习HTML的心得体会，以及实用的学习资源推荐...",
         date: "2024-01-21",
         readTime: "5分钟",
-        author: "上官云琛",
+        author: "作者名",
+        featured: true
+    },
+    {
+        id: 3,
+        title: "我的第一篇文章",
+        url: "posts/2024-01-22-my-first-post.html",
+        tags: ["技术", "HTML", "静态网站"],
+        content: `这是我的第一篇博客文章，用来记录我创建这个静态博客的过程。为什么选择纯HTML？我选择使用纯HTML创建博客，因为简单直接、快速加载、完全控制、易于维护。博客结构包含 index.html（首页）、style.css（样式文件）、about.html（关于页面）、archive.html（归档页面）和 posts/ 文章目录。`,
+        excerpt: "这是我的第一篇博客文章，用来记录我创建这个静态博客的过程...",
+        date: "2024-01-22",
+        readTime: "3分钟",
+        author: "作者名",
         featured: true
     }
 ];
