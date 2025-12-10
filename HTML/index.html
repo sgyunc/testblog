@@ -156,5 +156,41 @@
         // 页面加载完成后执行
         document.addEventListener('DOMContentLoaded', displayPosts);
     </script>
+    <!-- 在文章循环中添加作者信息 -->
+<script>
+function displayPosts() {
+    const postsList = document.getElementById('posts-list');
+    
+    blogDatabase.forEach(post => {
+        const article = document.createElement('article');
+        article.className = 'post-preview';
+        article.innerHTML = `
+            <div class="post-header">
+                <h3 class="post-title">
+                    <a href=" ">${post.title}</a >
+                </h3>
+                <div class="post-meta">
+                    <div class="author-meta">
+                        <i class="fas fa-user"></i>
+                        <span class="author">${post.author || BLOG_CONFIG.defaultAuthor}</span>
+                    </div>
+                    <time datetime="${post.date}">${post.date}</time>
+                    <div class="post-tags">
+                        ${post.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                    </div>
+                </div>
+            </div>
+            <div class="post-excerpt">
+                <p>${post.excerpt}</p >
+            </div>
+            <div class="post-footer">
+                <a href="${post.url}" class="read-more">阅读全文 →</a >
+                <span class="reading-time">${post.readTime}</span>
+            </div>
+        `;
+        postsList.appendChild(article);
+    });
+}
+</script>
 </body>
 </html>
