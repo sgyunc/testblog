@@ -18,7 +18,7 @@ const blogDatabase = [
     {
         id: 2,
         title: "如何学习HTML",
-        url: "posts/2024-01-21-learn-html.html",
+        url: "posts/post1.html",
         tags: ["学习", "HTML", "CSS", "前端"],
         content: `HTML是Web开发的基石，是所有网页的基础...`,
         excerpt: "分享一些学习HTML的心得体会，以及实用的学习资源推荐...",
