@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>文章标题 | 我的博客</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- 文章元数据 -->
+    <meta name="author" content="张三">
+    <meta property="article:author" content="张三">
+</head>
+<body>
+    <div class="container">
+        <header class="site-header">
+            <!-- ... 头部不变 ... -->
+        </header>
+        
+        <main class="article-page">
+            <article class="full-article">
+                <header class="article-header">
+                    <h1 class="article-title">文章标题</h1>
+                    
+                    <div class="article-meta">
+                        <div class="author-info">
+                            <i class="fas fa-user"></i>
+                            <span class="author" id="articleAuthor">作者名</span>
+                        </div>
+                        
+                        <div class="date-info">
+                            <i class="far fa-calendar"></i>
+                            <time datetime="YYYY-MM-DD" id="articleDate">YYYY年MM月DD日</time>
+                        </div>
+                        
+                        <div class="read-time">
+                            <i class="far fa-clock"></i>
+                            <span id="articleReadTime">约X分钟阅读</span>
+                        </div>
+                    </div>
+                    
+                    <div class="article-tags" id="articleTags">
+                        <!-- 标签将由JavaScript填充 -->
+                    </div>
+                </header>
+                
+                <!-- ... 文章内容 ... -->
+                
+                <footer class="article-footer">
+                    <!-- ... 文章页脚 ... -->
+                </footer>
+            </article>
+            
+            <aside class="sidebar">
+                <!-- 作者信息卡片 -->
+                <div class="widget author-card">
+                    <div class="author-avatar" id="authorAvatar">
+                        <!-- 头像将由JavaScript添加 -->
+                    </div>
+                    <div class="author-details">
+                        <h3 id="authorName">作者名</h3>
+                        <p class="author-bio" id="authorBio">作者的简短介绍...</p >
+                        <div class="author-social" id="authorSocial">
+                            <!-- 社交链接将由JavaScript添加 -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- ... 其他侧边栏内容 ... -->
+            </aside>
+        </main>
+        
+        <footer class="site-footer">
+            <div class="footer-content">
+                <p>© 2024 我的博客 | 作者：<span id="footerAuthor">张三</span></p >
+                <!-- ... 其他页脚内容 ... -->
+            </div>
+        </footer>
+    </div>
+    
+    <!-- 导入文章数据 -->
+    <script src="../blog-data.js"></script>
+    <script src="../author-config.js"></script>
+    
+    <!-- 文章页面脚本 -->
+    <script>
+        // 获取当前文章ID（从URL或页面数据）
+        function getCurrentArticleId() {
+            // 从URL提取文章ID
+            const url = window.location.pathname;
+            const filename = url.split('/').pop();
+            
+            // 根据文件名找到文章
+            const article = blogDatabase.find(post => 
+                post.url.includes(filename)
+            );
+            
+            return article ? article.id : null;
+        }
+        
+        // 填充作者信息
+        function fillAuthorInfo() {
+            const articleId = getCurrentArticleId();
+            const authorInfo = getAuthorInfo(articleId);
+            
+            // 更新页面中的作者信息
+            document.getElementById('articleAuthor').textContent = authorInfo.name;
+            document.getElementById('footerAuthor').textContent = authorInfo.name;
+            
+            // 更新侧边栏作者卡片
+            document.getElementById('authorName').textContent = authorInfo.name;
+            document.getElementById('authorBio').textContent = authorInfo.bio;
+            
+            // 添加头像（如果存在）
+            const authorAvatar = document.getElementById('authorAvatar');
+            if (authorInfo.avatar) {
+                authorAvatar.innerHTML = `< img src="../${authorInfo.avatar}" alt="${authorInfo.name}">`;
+            } else {
+                authorAvatar.innerHTML = `<i class="fas fa-user-circle"></i>`;
+            }
+            
+            // 添加社交链接
+            const authorSocial = document.getElementById('authorSocial');
+            if (authorInfo.social) {
+                let socialHtml = '';
+                Object.values(authorInfo.social).forEach(platform => {
+                    if (platform.url) {
+                        socialHtml += `
+                            <a href=" " target="_blank" rel="noopener" title="${platform.text}">
+                                <i class="${platform.icon}"></i>
+                            </a >
+                        `;
+                    }
+                });
+                authorSocial.innerHTML = socialHtml;
+            }
+            
+            // 更新元数据
+            document.querySelector('meta[name="author"]').content = authorInfo.name;
+            document.querySelector('meta[property="article:author"]').content = authorInfo.name;
+        }
+        
+        // 填充文章信息
+        function fillArticleInfo() {
+            const articleId = getCurrentArticleId();
+            if (!articleId) return;
+            
+            const article = blogDatabase.find(post => post.id === articleId);
+            if (!article) return;
+            
+            // 更新文章信息
+            if (article.title) {
+                document.title = `${article.title} | 我的博客`;
+                document.querySelector('.article-title').textContent = article.title;
+            }
+            
+            if (article.date) {
+                document.getElementById('articleDate').textContent = 
+                    article.date.replace('-', '年').replace('-', '月') + '日';
+                document.getElementById('articleDate').setAttribute('datetime', article.date);
+            }
+            
+            if (article.readTime) {
+                document.getElementById('articleReadTime').textContent = article.readTime;
+            }
+            
+            if (article.tags && article.tags.length > 0) {
+                const tagsContainer = document.getElementById('articleTags');
+                tagsContainer.innerHTML = article.tags.map(tag => 
+                    `<span class="tag">${tag}</span>`
+                ).join('');
+            }
+            
+            // 更新Open Graph标签
+            updateOpenGraphTags(article);
+        }
+        
+        // 更新Open Graph标签
+        function updateOpenGraphTags(article) {
+            // 如果页面有OG标签，更新它们
+            const ogTitle = document.querySelector('meta[property="og:title"]');
+            const ogDescription = document.querySelector('meta[property="og:description"]');
+            const ogImage = document.querySelector('meta[property="og:image"]');
+            
+            if (ogTitle && article.title) {
+                ogTitle.content = article.title;
+            }
+            
+            if (ogDescription && article.excerpt) {
+                ogDescription.content = article.excerpt;
+            }
+            
+            // 可以添加其他OG标签的更新
+        }
+        
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            fillAuthorInfo();
+            fillArticleInfo();
+            
+            // 添加上下文菜单
+            addContextMenu();
+        });
+        
+        // 添加上下文菜单（可选）
+        function addContextMenu() {
+            document.addEventListener('contextmenu', function(e) {
+                // 可以在右键菜单中添加作者信息
+                console.log('文章作者：', window.AUTHOR_CONFIG.name);
+            });
+        }
+    </script>
+    
+    <!-- 文章页面额外样式 -->
+    <style>
+        .author-card {
+            text-align: center;
+            padding: 1.5rem;
+        }
+        
+        .author-avatar {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 1rem;
+            border-radius: 50%;
+            overflow: hidden;
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .author-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .author-avatar i {
+            font-size: 4rem;
+            color: #3498db;
+        }
+        
+        .author-details h3 {
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+        }
+        
+        .author-bio {
+            color: #666;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+        
+        .author-social {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+        
+        .author-social a {
+            color: #666;
+            font-size: 1.2rem;
+            transition: color 0.3s ease;
+        }
+        
+        .author-social a:hover {
+            color: #3498db;
+        }
+    </style>
+</body>
+</html>
