@@ -1,79 +1,57 @@
-// 每页显示数量
-const PAGE_SIZE = 6;
+// 每次加载数量
+const BATCH = 6;
 
-// 说说数据（可无限扩展）
+// 当前已加载的项目数
+let loaded = 0;
+
+// 数据示例（你继续往下写就行）
 const shuoshuo = [
-    {
-        text: "今天做了一个超动态的说说页面 ✨",
-        time: "2025-12-11 15:20",
-        img: "https://picsum.photos/400/260?1"
-    },
-    {
-        text: "增加了暗色模式、动画、分页，好看又实用。",
-        time: "2025-12-10 17:11"
-    },
-    {
-        text: "支持图片啦，瀑布流更美观。",
-        time: "2025-12-09 10:50",
-        img: "https://picsum.photos/400/300?2"
-    },
-    // ...继续写即可
+    { text: "今天做了一个动态说说页面 ✨", time: "2025-12-11", img: "https://picsum.photos/400/260?1" },
+    { text: "加入暗色模式、动画、无限滚动。", time: "2025-12-11" },
+    { text: "支持图片显示。", time: "2025-12-10", img: "https://picsum.photos/400/300?2" },
+    { text: "你可以继续写更多内容……", time: "2025-12-09" },
+    // ……继续写
 ];
 
-// 当前页
-let page = 1;
-
-// 获取当前页数据
-function getPageData() {
-    const start = (page - 1) * PAGE_SIZE;
-    return shuoshuo.slice(start, start + PAGE_SIZE);
-}
-
-// 渲染函数（带动画）
-function renderShuoShuo() {
+// 渲染一批（不会清空）
+function renderBatch(batch) {
     const list = document.getElementById("list");
-    list.innerHTML = "";
 
-    getPageData().forEach((item, index) => {
+    batch.forEach((item, index) => {
         const div = document.createElement("div");
         div.className = "item";
-        div.style.animationDelay = `${index * 0.06}s`; // 逐条动画
+        div.style.animationDelay = `${index * 0.06}s`;
 
         div.innerHTML = `
-            ${item.img ? `<img src="${item.img}" class="pic">` : ""}
+            ${item.img ? `<img class="pic" src="${item.img}">` : ""}
             <div class="text">${item.text}</div>
             <div class="time">${item.time}</div>
         `;
 
         list.appendChild(div);
     });
-
-    updatePager();
 }
 
-// 更新分页按钮状态
-function updatePager() {
-    const totalPage = Math.ceil(shuoshuo.length / PAGE_SIZE);
+// 加载下一批
+function loadMore() {
+    // 如果全部加载完，就不再加载
+    if (loaded >= shuoshuo.length) return;
 
-    document.getElementById("prev").disabled = page === 1;
-    document.getElementById("next").disabled = page === totalPage;
-    document.getElementById("pageNum").innerText = `${page} / ${totalPage}`;
+    const slice = shuoshuo.slice(loaded, loaded + BATCH);
+    loaded += slice.length;
+
+    renderBatch(slice);
 }
 
-// 按钮事件
-function prevPage() {
-    if (page > 1) {
-        page--;
-        renderShuoShuo();
+// 滚动触发无限加载
+window.addEventListener("scroll", () => {
+    // 如果距离底部不足 200px，加载
+    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 200) {
+        loadMore();
     }
-}
+});
 
-function nextPage() {
-    const totalPage = Math.ceil(shuoshuo.length / PAGE_SIZE);
-    if (page < totalPage) {
-        page++;
-        renderShuoShuo();
-    }
-}
-
-window.onload = renderShuoShuo;
+// 初次加载
+window.onload = () => {
+    loadMore();
+};
