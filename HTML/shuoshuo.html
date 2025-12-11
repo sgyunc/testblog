@@ -109,19 +109,16 @@
         transform: translateY(0);
     }
 
-/* 图片懒加载：初始模糊 + 透明 */
 .pic {
     width: 100%;
     border-radius: 10px;
-    margin-bottom: 10px;
-    background: #ddd;
+    background: #eee;
     opacity: 0;
-    filter: blur(8px);
-    transform: scale(1.02);
-    transition: opacity .6s ease, filter .6s ease, transform .6s ease;
+    filter: blur(10px);
+    transform: scale(1.05);
+    transition: .5s ease;
 }
 
-/* 加载完成后淡入 + 清晰 + 回到正常尺寸 */
 .pic.loaded {
     opacity: 1;
     filter: blur(0);
