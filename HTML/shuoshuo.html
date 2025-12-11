@@ -1,6 +1,6 @@
 <style>
     body {
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        font-family: system-ui, sans-serif;
         background: #fafafa;
         padding: 24px;
         color: #333;
@@ -12,25 +12,36 @@
         font-weight: 600;
     }
 
+    /* ========== 瀑布流布局 ========== */
     #list {
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
+        column-count: 2;       /* 两栏瀑布流（可改为 3 / 4） */
+        column-gap: 16px;
+    }
+
+    @media (max-width: 600px) {
+        #list {
+            column-count: 1;   /* 手机端单列 */
+        }
     }
 
     .item {
         background: #fff;
-        padding: 18px 20px;
+        padding: 16px 18px;
         border-radius: 12px;
         border: 1px solid #e5e5e5;
         box-shadow:
             0 1px 2px rgba(0, 0, 0, 0.04),
             0 4px 12px rgba(0, 0, 0, 0.03);
-        transition: 0.2s ease;
+        margin-bottom: 16px;
+
+        display: inline-block; /* 瀑布流必须用 inline-block */
+        width: 100%;
+        box-sizing: border-box;
     }
 
     .item:hover {
         transform: translateY(-2px);
+        transition: 0.2s ease;
         box-shadow:
             0 4px 12px rgba(0, 0, 0, 0.06),
             0 1px 4px rgba(0, 0, 0, 0.04);
@@ -39,11 +50,11 @@
     .item div:first-child {
         font-size: 15px;
         line-height: 1.6;
-        white-space: pre-wrap; /* 支持换行 */
+        white-space: pre-wrap;
     }
 
     .time {
-        padding-top: 8px;
+        margin-top: 8px;
         font-size: 13px;
         color: #999;
     }
