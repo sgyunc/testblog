@@ -101,16 +101,23 @@ function lazyLoadImages() {
     });
 }
 
+let lastScrollY = 0;
+
 // 滚动触发加载
 window.addEventListener("scroll", () => {
     lazyLoadImages();
 
-    // 自动加载更多
-    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 400) {
+    const scrollDown = window.scrollY > lastScrollY;  // 是否向下滚
+    lastScrollY = window.scrollY;
+
+    const nearBottom =
+        window.innerHeight + window.scrollY >= document.body.offsetHeight - 200; // 更精准
+
+    if (scrollDown && nearBottom && !loading) {
         loadMore();
     }
 
-    // 显示返回顶部按钮
+    // 返回顶部按钮
     const topBtn = document.getElementById("topBtn");
     if (window.scrollY > 300) {
         topBtn.classList.add("show");
