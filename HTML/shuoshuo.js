@@ -89,11 +89,20 @@ function goTop() {
     window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+let lastWidth = window.innerWidth;
+
+window.addEventListener("resize", () => {
+    if (Math.abs(window.innerWidth - lastWidth) < 10) return;
+    lastWidth = window.innerWidth;
+
+    initColumns();
+    renderAll();
+});
 // 初次加载
 //window.onload = () => {
     //initColumns();
     //renderAll();
-};
+//};
 
 // 响应式重排
 window.onresize = () => {
