@@ -1,132 +1,135 @@
-// ===== 配置 =====
-const COL_GAP = 16;
-const CARD_WIDTH = 0;  // 自动计算
-let columnWidth;
-
-// ===== 数据（你的说说数据） =====
-const shuoshuo = [
+/* =========================================================================
+   1. 说说数据（集中管理）
+   ========================================================================= */
+window.SHUOSHUO_DATA = [
     { text: "新版 Masonry 超级丝滑 ✨", time: "2025-12-11", img: "https://picsum.photos/400/300?1" },
-    { text: "IntersectionObserver = 真正不限性能", time: "2025-12-11", img: "https://picsum.photos/400/280?2" },
-    { text: "不再依赖 offsetHeight，0 闪烁", time: "2025-12-10" },
-    { text: "懒加载大升级 🚀", time: "2025-12-09", img: "https://picsum.photos/400/260?3" },
+    { text: "IntersectionObserver = 真正无限性能", time: "2025-12-11", img: "https://picsum.photos/400/280?2" },
+    { text: "懒加载升级成功 🚀", time: "2025-12-10" },
+    { text: "好舒服的小动画 😌", time: "2025-12-09", img: "https://picsum.photos/400/260?3" },
 ];
 
+/* =========================================================================
+   2. Masonry 瀑布流布局（自动计算）
+   ========================================================================= */
+function masonryLayout(containerSelector, itemSelector, columnCount = 2, gap = 16) {
+    const container = document.querySelector(containerSelector);
+    const items = document.querySelectorAll(itemSelector);
 
-// ===== 动态列系统 =====
-let columns = [];
-let colHeights = [];
-let colCount = 0;
+    if (!container) return;
 
-function setupColumns() {
-    const list = document.getElementById("list");
-    list.innerHTML = '';
+    const colHeights = new Array(columnCount).fill(0);
 
-    const width = list.clientWidth;
-    colCount = width < 600 ? 1 : 2;
+    items.forEach(item => {
+        const minCol = colHeights.indexOf(Math.min(...colHeights));
 
-    columnWidth = (width - (colCount - 1) * COL_GAP) / colCount;
+        item.style.position = "absolute";
+        item.style.top = colHeights[minCol] + "px";
+        item.style.left = `calc((100% / ${columnCount}) * ${minCol})`;
 
-    columns = [];
-    colHeights = new Array(colCount).fill(0);
-
-    for (let i = 0; i < colCount; i++) {
-        const col = document.createElement("div");
-        col.className = "masonry-col";
-        col.style.width = columnWidth + "px";
-        columns.push(col);
-        document.getElementById("list").appendChild(col);
-    }
-}
-
-
-// ===== 计算图片高度（不依赖 DOM） =====
-function calcImageHeight(url) {
-    return new Promise(resolve => {
-        const img = new Image();
-        img.onload = () => {
-            const scale = columnWidth / img.width;
-            resolve(img.height * scale);
-        };
-        img.src = url;
+        colHeights[minCol] += item.offsetHeight + gap;
     });
+
+    container.style.position = "relative";
+    container.style.height = Math.max(...colHeights) + "px";
 }
 
+/* =========================================================================
+   3. 懒加载（带淡入 + 模糊动画）
+   ========================================================================= */
+function lazyLoadImages() {
+    const imgs = document.querySelectorAll("img.lazy");
 
-// ===== 渲染一条说说 =====
-async function renderItem(item) {
-    const card = document.createElement("div");
-    card.className = "item";
-
-    // 计算卡片预期高度（不触发DOM）
-    let imgHTML = "";
-    let imgHeight = 0;
-
-    if (item.img) {
-        imgHeight = await calcImageHeight(item.img);
-        imgHTML = `<img data-src="${item.img}" class="pic lazy">`;
-    }
-
-    card.innerHTML = `
-        ${imgHTML}
-        <div class="text">${item.text}</div>
-        <div class="time">${item.time}</div>
-    `;
-
-    // 找到最矮的一列
-    const minIndex = colHeights.indexOf(Math.min(...colHeights));
-
-    // 放进去
-    columns[minIndex].appendChild(card);
-
-    // 更新列高（提前计算数值，不读取 DOM）
-    const baseHeight = imgHeight + 80; // 文本区域的预估高度
-    colHeights[minIndex] += baseHeight;
-
-    // 观察懒加载
-    observeImages(card);
-}
-
-
-// ===== 渲染全部 =====
-async function renderAll() {
-    for (const item of shuoshuo) {
-        await renderItem(item);
-    }
-}
-
-
-// ===== IntersectionObserver：懒加载 =====
-const imgObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            const img = entry.target;
+    imgs.forEach(img => {
+        const rect = img.getBoundingClientRect();
+        if (rect.top < window.innerHeight + 200) {
             img.src = img.dataset.src;
             img.onload = () => img.classList.add("loaded");
-            imgObserver.unobserve(img);
+            img.classList.remove("lazy");
         }
     });
-});
-
-function observeImages(card) {
-    const img = card.querySelector("img.lazy");
-    if (img) imgObserver.observe(img);
 }
 
+/* =========================================================================
+   4. 无限滚动加载更多
+   ========================================================================= */
+let ssPage = 0;
+const ssPerPage = 4;
 
-// ===== 返回顶部 =====
-function goTop() {
-    window.scrollTo({ top: 0, behavior: "smooth" });
+function loadMoreShuoshuo() {
+    const start = ssPage * ssPerPage;
+    const end = start + ssPerPage;
+    const chunk = SHUOSHUO_DATA.slice(start, end);
+
+    if (chunk.length === 0) return;
+
+    const wrap = document.querySelector("#ss-wrap");
+
+    chunk.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "ss-item";
+
+        const img = item.img
+          ? `<img class="pic lazy" data-src="${item.img}">`
+          : "";
+
+        card.innerHTML = `
+            ${img}
+            <div class="text">${item.text}</div>
+            <div class="time">${item.time}</div>
+        `;
+
+        wrap.appendChild(card);
+    });
+
+    ssPage++;
+    setTimeout(() => {
+        lazyLoadImages();
+        masonryLayout("#ss-wrap", ".ss-item", 2, 16);
+    }, 100);
 }
 
-window.addEventListener("scroll", () => {
-    const btn = document.getElementById("topBtn");
-    if (window.scrollY > 300) btn.classList.add("show");
-    else btn.classList.remove("show");
+function initInfiniteScroll() {
+    window.addEventListener("scroll", () => {
+        if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 200) {
+            loadMoreShuoshuo();
+        }
+    });
+}
+
+/* =========================================================================
+   5. “随机说说小卡片”功能（可在任何页面使用）
+   ========================================================================= */
+function renderRandomShuoCard() {
+    const widgets = document.querySelectorAll(".shuoshuo-widget");
+    if (widgets.length === 0) return;
+
+    widgets.forEach(w => {
+        const d = SHUOSHUO_DATA[Math.floor(Math.random() * SHUOSHUO_DATA.length)];
+
+        const card = document.createElement("div");
+        card.className = "ss-widget-card";
+
+        card.innerHTML = `
+            ${d.img ? `<img class="ss-widget-img" src="${d.img}">` : ""}
+            <div class="ss-widget-text">${d.text}</div>
+            <div class="ss-widget-time">${d.time}</div>
+        `;
+
+        w.appendChild(card);
+    });
+}
+
+/* =========================================================================
+   6. 页面加载后自动初始化
+   ========================================================================= */
+window.addEventListener("DOMContentLoaded", () => {
+
+    // 如果当前页面含有说说瀑布流，则初始化
+    if (document.querySelector("#ss-wrap")) {
+        loadMoreShuoshuo();
+        initInfiniteScroll();
+    }
+
+    // 所有页面自动渲染随机说说卡片
+    renderRandomShuoCard();
 });
-
-
-// ===== 启动 =====
-window.onload = async () => {
-    setupColumns();
-    await renderAll();
-};
