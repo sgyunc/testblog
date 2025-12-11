@@ -57,7 +57,6 @@ function renderAll() {
     lazyLoadImages();
 }
 
-// 图片懒加载
 function lazyLoadImages() {
     const lazyImages = document.querySelectorAll("img.lazy");
 
@@ -66,6 +65,11 @@ function lazyLoadImages() {
 
         if (rect.top < window.innerHeight + 200) {
             img.src = img.dataset.src;
+
+            img.onload = () => {
+                img.classList.add("loaded");   // 加上动画触发类
+            };
+
             img.classList.remove("lazy");
         }
     });
