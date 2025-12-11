@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>动态说说页面 · 升级版</title>
+<title>动态说说 · Masonry 终极版</title>
 
 <style>
     :root {
@@ -13,7 +13,6 @@
         --border: #e5e5e5;
     }
 
-    /* 暗色模式 */
     [data-theme="dark"] {
         --bg: #1c1c1c;
         --card: #2a2a2a;
@@ -25,23 +24,23 @@
         background: var(--bg);
         color: var(--text);
         font-family: system-ui, sans-serif;
+        margin: 0;
         padding: 20px;
-        transition: background .3s, color .3s;
+        transition: .3s;
     }
 
-    h2 {
-        margin-bottom: 20px;
-        font-size: 22px;
-    }
-
-    /* 瀑布流 */
     #list {
-        column-count: 2;
-        column-gap: 16px;
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+        justify-content: center;
     }
 
-    @media(max-width:600px){
-        #list { column-count: 1; }
+    .masonry-col {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
     }
 
     .item {
@@ -49,35 +48,24 @@
         border: 1px solid var(--border);
         padding: 16px;
         border-radius: 12px;
-        margin-bottom: 16px;
-        width: 100%;
-        display: inline-block;
         box-shadow:
             0 1px 2px rgba(0,0,0,.04),
             0 4px 12px rgba(0,0,0,.03);
 
-        /* 动画 */
         opacity: 0;
         transform: translateY(20px);
-        animation: fadeIn .4s forwards ease;
+        animation: fadeIn .5s forwards ease;
     }
 
     @keyframes fadeIn {
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        to { opacity: 1; transform: translateY(0); }
     }
 
     .pic {
         width: 100%;
         border-radius: 10px;
         margin-bottom: 10px;
-    }
-
-    .text {
-        font-size: 15px;
-        line-height: 1.6;
+        background: #ddd; /* 懒加载占位 */
     }
 
     .time {
@@ -86,65 +74,52 @@
         margin-top: 6px;
     }
 
-    /* 分页 */
-    .pager {
-        margin-top: 30px;
-        text-align: center;
-        display: flex;
-        justify-content: center;
-        gap: 10px;
+    /* Loading */
+    #spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #999;
+        border-top-color: transparent;
+        border-radius: 50%;
+        margin: 30px auto;
+        animation: spin 1s linear infinite;
+        opacity: 0;
+        transition: .3s;
+    }
+    @keyframes spin {
+        to { transform: rotate(360deg); }
     }
 
-    button {
-        padding: 8px 16px;
-        border: none;
-        background: #000;
-        color: #fff;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: .2s;
-    }
-
-    button:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-
-    /* 暗色下按钮 */
-    [data-theme="dark"] button {
-        background: #fff;
-        color: #000;
-    }
-
-    .themeBtn {
+    /* 返回顶部 */
+    #topBtn {
         position: fixed;
         right: 20px;
-        top: 20px;
-        padding: 8px 16px;
-        background: #333;
+        bottom: 40px;
+        padding: 10px 14px;
+        border-radius: 8px;
+        background: #000;
+        color: #fff;
+        cursor: pointer;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: .3s;
     }
+    #topBtn.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
 </style>
 </head>
 <body>
 
-<button class="themeBtn" onclick="toggleTheme()">切换主题</button>
+<h2>动态说说 · Masonry 终极版</h2>
 
-<h2>说说</h2>
 <div id="list"></div>
 
-<div class="pager">
-    <button id="prev" onclick="prevPage()">上一页</button>
-    <span id="pageNum"></span>
-    <button id="next" onclick="nextPage()">下一页</button>
-</div>
+<div id="spinner"></div>
 
-<script>
-// 手动切换暗色 / 亮色
-function toggleTheme() {
-    const body = document.body;
-    body.dataset.theme = body.dataset.theme === "dark" ? "light" : "dark";
-}
-</script>
+<div id="topBtn" onclick="goTop()">⬆ 返回顶部</div>
 
 <script src="shuoshuo.js"></script>
 </body>
