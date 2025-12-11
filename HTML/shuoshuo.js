@@ -1,23 +1,13 @@
-// 每批加载数量
-const BATCH = 6;
-
-// 当前已加载数量
-let loaded = 0;
-
 // Masonry 列数
 let columnCount = 2;
-
-// 列数组
 let columns = [];
 
-let loading = false;
-
-// 示例数据（继续写即可）
+// 数据（你自己的数据）
 const shuoshuo = [
     { text: "动态说说页面增强版上线 ✨", time: "2025-12-11", img: "https://picsum.photos/400/260?1" },
     { text: "图片支持懒加载，更快更省流量", time: "2025-12-11", img: "https://picsum.photos/400/300?2" },
     { text: "加入专业 Masonry 布局，无断层！", time: "2025-12-10" },
-    { text: "无限滚动 + 返回顶部按钮", time: "2025-12-09", img: "https://picsum.photos/400/280?3" },
+    { text: "返回顶部按钮保留", time: "2025-12-09", img: "https://picsum.photos/400/280?3" },
 ];
 
 // 初始化 Masonry 列
@@ -25,7 +15,6 @@ function initColumns() {
     const list = document.getElementById("list");
     list.innerHTML = "";
 
-    // 手机端1列
     columnCount = window.innerWidth < 600 ? 1 : 2;
 
     columns = [];
@@ -45,14 +34,13 @@ function getShortestColumn() {
     );
 }
 
-// 渲染一批
-function renderBatch(batch) {
-    batch.forEach((item, index) => {
+// 渲染全部数据（不再分批）
+function renderAll() {
+    shuoshuo.forEach((item, index) => {
         const div = document.createElement("div");
         div.className = "item";
         div.style.animationDelay = `${index * 0.05}s`;
 
-        // 懒加载图
         const imgHTML = item.img
             ? `<img class="pic lazy" data-src="${item.img}">`
             : "";
@@ -69,24 +57,6 @@ function renderBatch(batch) {
     lazyLoadImages();
 }
 
-// 加载更多
-function loadMore() {
-    if (loading || loaded >= shuoshuo.length) return;
-    loading = true;
-
-    showSpinner();
-
-    setTimeout(() => {
-        const slice = shuoshuo.slice(loaded, loaded + BATCH);
-        loaded += slice.length;
-
-        renderBatch(slice);
-
-        hideSpinner();
-        loading = false;
-    }, 600); // 模拟网络延迟
-}
-
 // 图片懒加载
 function lazyLoadImages() {
     const lazyImages = document.querySelectorAll("img.lazy");
@@ -101,29 +71,13 @@ function lazyLoadImages() {
     });
 }
 
-let lastScrollY = 0;
-
-// 滚动触发加载
+// 滚动事件只保留：懒加载 + 返回顶部
 window.addEventListener("scroll", () => {
     lazyLoadImages();
 
-    const scrollDown = window.scrollY > lastScrollY;  // 是否向下滚
-    lastScrollY = window.scrollY;
-
-    const nearBottom =
-        window.innerHeight + window.scrollY >= document.body.offsetHeight - 200; // 更精准
-
-    if (scrollDown && nearBottom && !loading) {
-        loadMore();
-    }
-
-    // 返回顶部按钮
     const topBtn = document.getElementById("topBtn");
-    if (window.scrollY > 300) {
-        topBtn.classList.add("show");
-    } else {
-        topBtn.classList.remove("show");
-    }
+    if (window.scrollY > 300) topBtn.classList.add("show");
+    else topBtn.classList.remove("show");
 });
 
 // 返回顶部
@@ -131,24 +85,14 @@ function goTop() {
     window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-// Loading spinner
-function showSpinner() {
-    document.getElementById("spinner").style.opacity = 1;
-}
-function hideSpinner() {
-    document.getElementById("spinner").style.opacity = 0;
-}
-
 // 初次加载
 window.onload = () => {
     initColumns();
-    loadMore();
+    renderAll();
 };
 
-// 监听窗口大小变化
+// 响应式重排
 window.onresize = () => {
-    const oldCount = columnCount;
     initColumns();
-    loaded = 0;
-    loadMore();
+    renderAll();
 };
