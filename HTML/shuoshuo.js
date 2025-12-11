@@ -90,9 +90,9 @@ function goTop() {
 }
 
 // 初次加载
-window.onload = () => {
-    initColumns();
-    renderAll();
+//window.onload = () => {
+    //initColumns();
+    //renderAll();
 };
 
 // 响应式重排
